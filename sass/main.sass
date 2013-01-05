@@ -1,0 +1,58 @@
+/*
+  mainとなるcss
+
+@import "compass"
+@import "compass/utilities/tables/scaffolding"
+
+html, body
+	height: 100%
+	width: 100%
+	margin: 0px
+
+
+#container
+	height: 100%
+	width: 100%
+	background-color: black
+
+#cal 
+	position: absolute
+	left: 0
+	bottom: 0
+	margin: 0px
+
+	font-family: Arial,Sans-Serif
+	color: rgb(255, 255, 255)
+
+	#month
+		font-size: 50px
+		+single-text-shadow
+		margin: 0px
+		position: relative
+
+		width: 30%
+		margin: 0 auto
+		text-align: center
+
+	#year
+		font-size: 15px
+		position: absolute
+		top: 13px
+		left: 60px
+
+
+	#days
+		font-size: 12px
+
+		border-top: solid 1px rdb(33, 33, 33)
+
+		table
+			+table-scaffolding
+
+			.holiday
+				color: red
+		
+
+
+
+	
