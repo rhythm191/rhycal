@@ -179,13 +179,19 @@
   };
 
   jQuery(function($) {
-    var $windowHeight, $windowMaxLength, $windowWidth, angularSpeed, anime, centerX, centerY, factory, i, ssLayer, stage, star, starFactory, starLayer, starNum, starRate, x, y, _i;
+    var $windowHeight, $windowMaxLength, $windowWidth, angularSpeed, anime, centerX, centerY, dayNum, factory, i, ssLayer, stage, star, starFactory, starLayer, starNum, starRate, x, y, _i;
+    dayNum = new Date().getDate();
+    $('#days').find('.numeric').not('.nextMonth').each(function() {
+      if ($(this).text() === ("" + dayNum)) {
+        return $(this).append('<span class="today">☆</span>');
+      }
+    });
     $windowWidth = $(window).width();
     $windowHeight = $(window).height();
     $windowMaxLength = Math.sqrt($windowWidth * $windowWidth + $windowHeight * $windowHeight);
     centerX = $windowWidth / 2;
     centerY = $windowHeight / 2;
-    starNum = ($windowMaxLength * $windowMaxLength) / 600;
+    starNum = ($windowMaxLength * $windowMaxLength) / 1000;
     stage = new Kinetic.Stage({
       container: 'container',
       width: $windowWidth,
@@ -216,7 +222,28 @@
       }
       return _results;
     }, starLayer);
-    return anime.start();
+    anime.start();
+    return $(window).resize(function(e) {
+      var _j;
+      anime.stop();
+      $windowWidth = $(window).width();
+      $windowHeight = $(window).height();
+      $windowMaxLength = Math.sqrt($windowWidth * $windowWidth + $windowHeight * $windowHeight);
+      centerX = $windowWidth / 2;
+      centerY = $windowHeight / 2;
+      starNum = ($windowMaxLength * $windowMaxLength) / 1000;
+      stage.setWidth($windowWidth);
+      stage.setHeight($windowHeight);
+      starLayer.removeChildren();
+      for (i = _j = 0; 0 <= starNum ? _j <= starNum : _j >= starNum; i = 0 <= starNum ? ++_j : --_j) {
+        factory = getStarFactory(starFactory, starRate);
+        x = getRandomOffset(($windowWidth - $windowMaxLength) / 2, $windowMaxLength);
+        y = getRandomOffset(($windowHeight - $windowMaxLength) / 2, $windowMaxLength);
+        star = factory(centerX, centerY, centerX - x, centerY - y);
+        starLayer.add(star);
+      }
+      return anime.start();
+    });
   });
 
 }).call(this);

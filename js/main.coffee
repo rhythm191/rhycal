@@ -145,7 +145,14 @@ getStarFactory = (starFactory, rate) ->
 # 
 jQuery ($) ->
 
-	# 設定パラメータ
+	# 今日の日付には.todayをつける
+	dayNum = new Date().getDate()
+	$('#days').find('.numeric').not('.nextMonth').each ->
+		#$(this).addClass('today').text('☆') if $(this).text() is "#{dayNum}"
+		$(this).append('<span class="today">☆</span>') if $(this).text() is "#{dayNum}"
+
+
+	# 星の描画に関する設定パラメータ
 	$windowWidth = $(window).width()
 	$windowHeight = $(window).height()
 	$windowMaxLength = Math.sqrt($windowWidth * $windowWidth + $windowHeight * $windowHeight)
@@ -189,6 +196,33 @@ jQuery ($) ->
 	, starLayer)
 
 	anime.start()
+
+	# ウインドウサイズが変わったら星を作り直す
+	$(window).resize (e) ->
+		anime.stop()
+
+		$windowWidth = $(window).width()
+		$windowHeight = $(window).height()
+		$windowMaxLength = Math.sqrt($windowWidth * $windowWidth + $windowHeight * $windowHeight)
+		centerX = $windowWidth / 2
+		centerY = $windowHeight / 2
+		starNum = ($windowMaxLength * $windowMaxLength) / 1000
+
+		stage.setWidth($windowWidth)
+		stage.setHeight($windowHeight)
+
+		starLayer.removeChildren()
+		for i in [0..starNum]
+			factory = getStarFactory(starFactory, starRate)
+			x = getRandomOffset(($windowWidth - $windowMaxLength) / 2, $windowMaxLength)
+			y = getRandomOffset(($windowHeight - $windowMaxLength) / 2, $windowMaxLength)
+			star = factory(centerX, centerY, centerX - x, centerY - y)
+			starLayer.add(star)
+
+		anime.start()
+
+
+
 
 	# 流れ星を生成するアニメーション
 	# shootingstarFunc = ->
