@@ -13,13 +13,12 @@
 (function() {
   var createBigStar, createMiddleStar, createPurpleStar, createRedMiddleStar, createRedSmallStar, createSmallStar, getRandomNum, getRandomOffset, getStarFactory;
 
-  createSmallStar = function(x, y, offsetX, offsetY) {
+  createSmallStar = function(x, y) {
     var circle;
     return circle = new Kinetic.Circle({
       x: x,
       y: y,
       radius: 1,
-      offset: [offsetX, offsetY],
       fill: {
         start: {
           x: 0,
@@ -36,13 +35,12 @@
     });
   };
 
-  createMiddleStar = function(x, y, offsetX, offsetY) {
+  createMiddleStar = function(x, y) {
     var circle;
     return circle = new Kinetic.Circle({
       x: x,
       y: y,
       radius: 2,
-      offset: [offsetX, offsetY],
       fill: {
         start: {
           x: 0,
@@ -59,13 +57,12 @@
     });
   };
 
-  createBigStar = function(x, y, offsetX, offsetY) {
+  createBigStar = function(x, y) {
     var circle;
     return circle = new Kinetic.Circle({
       x: x,
       y: y,
       radius: 4,
-      offset: [offsetX, offsetY],
       fill: {
         start: {
           x: 0,
@@ -82,13 +79,12 @@
     });
   };
 
-  createPurpleStar = function(x, y, offsetX, offsetY) {
+  createPurpleStar = function(x, y) {
     var circle;
     return circle = new Kinetic.Circle({
       x: x,
       y: y,
       radius: 3,
-      offset: [offsetX, offsetY],
       fill: {
         start: {
           x: 0,
@@ -105,13 +101,12 @@
     });
   };
 
-  createRedSmallStar = function(x, y, offsetX, offsetY) {
+  createRedSmallStar = function(x, y) {
     var circle;
     return circle = new Kinetic.Circle({
       x: x,
       y: y,
       radius: 1,
-      offset: [offsetX, offsetY],
       fill: {
         start: {
           x: 0,
@@ -128,13 +123,12 @@
     });
   };
 
-  createRedMiddleStar = function(x, y, offsetX, offsetY) {
+  createRedMiddleStar = function(x, y) {
     var circle;
     return circle = new Kinetic.Circle({
       x: x,
       y: y,
       radius: 2,
-      offset: [offsetX, offsetY],
       fill: {
         start: {
           x: 0,
@@ -179,7 +173,7 @@
   };
 
   jQuery(function($) {
-    var $windowHeight, $windowMaxLength, $windowWidth, angularSpeed, anime, centerX, centerY, dayNum, factory, i, ssLayer, stage, star, starFactory, starLayer, starNum, starRate, x, y, _i;
+    var $windowHeight, $windowMaxLength, $windowWidth, angularSpeed, anime, dayNum, factory, i, ssLayer, stage, star, starFactory, starLayer, starNum, starRate, x, y, _i;
     dayNum = new Date().getDate();
     $('#days').find('.numeric').not('.nextMonth').each(function() {
       if ($(this).text() === ("" + dayNum)) {
@@ -189,15 +183,17 @@
     $windowWidth = $(window).width();
     $windowHeight = $(window).height();
     $windowMaxLength = Math.sqrt($windowWidth * $windowWidth + $windowHeight * $windowHeight);
-    centerX = $windowWidth / 2;
-    centerY = $windowHeight / 2;
     starNum = ($windowMaxLength * $windowMaxLength) / 1000;
     stage = new Kinetic.Stage({
       container: 'container',
       width: $windowWidth,
       height: $windowHeight
     });
-    starLayer = new Kinetic.Layer();
+    starLayer = new Kinetic.Layer({
+      x: $windowWidth / 2,
+      y: $windowHeight / 2,
+      offset: [$windowWidth / 2, $windowHeight / 2]
+    });
     ssLayer = new Kinetic.Layer();
     starFactory = [createSmallStar, createMiddleStar, createBigStar, createPurpleStar, createRedSmallStar, createRedMiddleStar];
     starRate = [50, 30, 1, 1, 7, 1];
@@ -205,22 +201,16 @@
       factory = getStarFactory(starFactory, starRate);
       x = getRandomOffset(($windowWidth - $windowMaxLength) / 2, $windowMaxLength);
       y = getRandomOffset(($windowHeight - $windowMaxLength) / 2, $windowMaxLength);
-      star = factory(centerX, centerY, centerX - x, centerY - y);
+      star = factory(x, y);
       starLayer.add(star);
     }
     stage.add(starLayer);
     stage.add(ssLayer);
     angularSpeed = Math.PI / 800;
     anime = new Kinetic.Animation(function(frame) {
-      var angleDiff, children, node, _j, _len, _results;
+      var angleDiff;
       angleDiff = frame.timeDiff * angularSpeed / 1000;
-      children = starLayer.getChildren();
-      _results = [];
-      for (_j = 0, _len = children.length; _j < _len; _j++) {
-        node = children[_j];
-        _results.push(node.rotate(angleDiff));
-      }
-      return _results;
+      return starLayer.rotate(angleDiff);
     }, starLayer);
     anime.start();
     return $(window).resize(function(e) {
@@ -229,17 +219,19 @@
       $windowWidth = $(window).width();
       $windowHeight = $(window).height();
       $windowMaxLength = Math.sqrt($windowWidth * $windowWidth + $windowHeight * $windowHeight);
-      centerX = $windowWidth / 2;
-      centerY = $windowHeight / 2;
       starNum = ($windowMaxLength * $windowMaxLength) / 1000;
       stage.setWidth($windowWidth);
       stage.setHeight($windowHeight);
+      starLayer.rotate(0);
+      starLayer.setX($windowWidth);
+      starLayer.setY($windowHeight);
+      starLayer.setOffset($windowWidth / 2, $windowHeight / 2);
       starLayer.removeChildren();
       for (i = _j = 0; 0 <= starNum ? _j <= starNum : _j >= starNum; i = 0 <= starNum ? ++_j : --_j) {
         factory = getStarFactory(starFactory, starRate);
         x = getRandomOffset(($windowWidth - $windowMaxLength) / 2, $windowMaxLength);
         y = getRandomOffset(($windowHeight - $windowMaxLength) / 2, $windowMaxLength);
-        star = factory(centerX, centerY, centerX - x, centerY - y);
+        star = factory(x, y);
         starLayer.add(star);
       }
       return anime.start();

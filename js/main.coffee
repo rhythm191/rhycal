@@ -7,12 +7,11 @@
 ###
 
 # 小さき星を表現するShapeクラスを返す
-createSmallStar = (x, y, offsetX, offsetY) ->
+createSmallStar = (x, y) ->
 	circle = new Kinetic.Circle(
 		x: x
 		y: y
 		radius: 1
-		offset: [offsetX, offsetY]
 		fill:
 			start:
 				x: 0
@@ -26,12 +25,11 @@ createSmallStar = (x, y, offsetX, offsetY) ->
 	)
 
 # 小さき星を表現するShapeクラスを返す
-createMiddleStar = (x, y, offsetX, offsetY) ->
+createMiddleStar = (x, y) ->
 	circle = new Kinetic.Circle(
 		x: x
 		y: y
 		radius: 2
-		offset: [offsetX, offsetY]
 		fill:
 			start:
 				x: 0
@@ -45,12 +43,11 @@ createMiddleStar = (x, y, offsetX, offsetY) ->
 	)
 
 # 比較的大きな星を表現するShapeクラスを返す
-createBigStar = (x, y, offsetX, offsetY) ->
+createBigStar = (x, y) ->
 	circle = new Kinetic.Circle(
 		x: x
 		y: y
 		radius: 4
-		offset: [offsetX, offsetY]
 		fill:
 			start:
 				x: 0
@@ -64,12 +61,11 @@ createBigStar = (x, y, offsetX, offsetY) ->
 	)
 
 # 紫色の星を表現するShapeクラスを返す
-createPurpleStar = (x, y, offsetX, offsetY) ->
+createPurpleStar = (x, y) ->
 	circle = new Kinetic.Circle(
 		x: x
 		y: y
 		radius: 3
-		offset: [offsetX, offsetY]
 		fill:
 			start:
 				x: 0
@@ -83,12 +79,11 @@ createPurpleStar = (x, y, offsetX, offsetY) ->
 	)
 
 # 紫色の星を表現するShapeクラスを返す
-createRedSmallStar = (x, y, offsetX, offsetY) ->
+createRedSmallStar = (x, y) ->
 	circle = new Kinetic.Circle(
 		x: x
 		y: y
 		radius: 1
-		offset: [offsetX, offsetY]
 		fill:
 			start:
 				x: 0
@@ -102,12 +97,11 @@ createRedSmallStar = (x, y, offsetX, offsetY) ->
 	)
 
 # 紫色の星を表現するShapeクラスを返す
-createRedMiddleStar = (x, y, offsetX, offsetY) ->
+createRedMiddleStar = (x, y) ->
 	circle = new Kinetic.Circle(
 		x: x
 		y: y
 		radius: 2
-		offset: [offsetX, offsetY]
 		fill:
 			start:
 				x: 0
@@ -156,8 +150,6 @@ jQuery ($) ->
 	$windowWidth = $(window).width()
 	$windowHeight = $(window).height()
 	$windowMaxLength = Math.sqrt($windowWidth * $windowWidth + $windowHeight * $windowHeight)
-	centerX = $windowWidth / 2
-	centerY = $windowHeight / 2
 	starNum = ($windowMaxLength * $windowMaxLength) / 1000
 
 	stage = new Kinetic.Stage(
@@ -167,7 +159,12 @@ jQuery ($) ->
 	)
 
 	# 星を管理するレイヤー
-	starLayer = new Kinetic.Layer()
+	starLayer = new Kinetic.Layer(
+		x: $windowWidth / 2
+		y: $windowHeight / 2
+		offset: [$windowWidth / 2, $windowHeight / 2]
+	)
+	
 	# 流れ星を管理するレイヤー
 	ssLayer = new Kinetic.Layer()
 
@@ -180,7 +177,7 @@ jQuery ($) ->
 		factory = getStarFactory(starFactory, starRate)
 		x = getRandomOffset(($windowWidth - $windowMaxLength) / 2, $windowMaxLength)
 		y = getRandomOffset(($windowHeight - $windowMaxLength) / 2, $windowMaxLength)
-		star = factory(centerX, centerY, centerX - x, centerY - y)
+		star = factory(x, y)
 		starLayer.add(star)
 
 	stage.add(starLayer)
@@ -190,9 +187,7 @@ jQuery ($) ->
 	angularSpeed = Math.PI / 800
 	anime = new Kinetic.Animation( (frame) ->
 		angleDiff = frame.timeDiff * angularSpeed / 1000
-		children = starLayer.getChildren()
-		for node in children
-			node.rotate(angleDiff)
+		starLayer.rotate(angleDiff)
 	, starLayer)
 
 	anime.start()
@@ -204,19 +199,21 @@ jQuery ($) ->
 		$windowWidth = $(window).width()
 		$windowHeight = $(window).height()
 		$windowMaxLength = Math.sqrt($windowWidth * $windowWidth + $windowHeight * $windowHeight)
-		centerX = $windowWidth / 2
-		centerY = $windowHeight / 2
 		starNum = ($windowMaxLength * $windowMaxLength) / 1000
 
 		stage.setWidth($windowWidth)
 		stage.setHeight($windowHeight)
+		starLayer.rotate(0)
+		starLayer.setX($windowWidth)
+		starLayer.setY($windowHeight)
+		starLayer.setOffset($windowWidth / 2, $windowHeight / 2)
 
 		starLayer.removeChildren()
 		for i in [0..starNum]
 			factory = getStarFactory(starFactory, starRate)
 			x = getRandomOffset(($windowWidth - $windowMaxLength) / 2, $windowMaxLength)
 			y = getRandomOffset(($windowHeight - $windowMaxLength) / 2, $windowMaxLength)
-			star = factory(centerX, centerY, centerX - x, centerY - y)
+			star = factory(x, y)
 			starLayer.add(star)
 
 		anime.start()
