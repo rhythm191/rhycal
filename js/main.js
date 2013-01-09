@@ -172,8 +172,14 @@
     return starFactory[starFactory.length - 1];
   };
 
+  window.requestAnimationFrame = (function() {
+    return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function(callback, element) {
+      return window.setTimeout(callback, 1000 / 60);
+    };
+  })();
+
   jQuery(function($) {
-    var $windowHeight, $windowMaxLength, $windowWidth, angularSpeed, anime, dayNum, factory, i, ssLayer, stage, star, starFactory, starLayer, starNum, starRate, x, y, _i;
+    var $windowHeight, $windowMaxLength, $windowWidth, a, angularSpeed, anime, dayNum, ex, factory, i, shootingStar, shootingStarStart, shootingstarFunc, ssLayer, stage, star, starFactory, starLayer, starNum, starRate, x, y, _i;
     dayNum = new Date().getDate();
     $('#days').find('.numeric').not('.nextMonth').each(function() {
       if ($(this).text() === ("" + dayNum)) {
@@ -213,7 +219,7 @@
       return starLayer.rotate(angleDiff);
     }, starLayer);
     anime.start();
-    return $(window).resize(function(e) {
+    $(window).resize(function(e) {
       var _j;
       anime.stop();
       $windowWidth = $(window).width();
@@ -223,9 +229,10 @@
       stage.setWidth($windowWidth);
       stage.setHeight($windowHeight);
       starLayer.rotate(0);
-      starLayer.setX($windowWidth);
-      starLayer.setY($windowHeight);
+      starLayer.setX($windowWidth / 2);
+      starLayer.setY($windowHeight / 2);
       starLayer.setOffset($windowWidth / 2, $windowHeight / 2);
+      starLayer.draw();
       starLayer.removeChildren();
       for (i = _j = 0; 0 <= starNum ? _j <= starNum : _j >= starNum; i = 0 <= starNum ? ++_j : --_j) {
         factory = getStarFactory(starFactory, starRate);
@@ -236,6 +243,47 @@
       }
       return anime.start();
     });
+    shootingStar = null;
+    shootingStarStart = null;
+    ex = null;
+    a = null;
+    shootingstarFunc = function() {
+      var points, timeDiff;
+      if (ssLayer.getChildren().length === 0) {
+        shootingStarStart = new Date().getTime();
+        x = getRandomOffset(($windowWidth - $windowMaxLength) / 2, $windowMaxLength);
+        y = getRandomOffset(($windowHeight - $windowMaxLength) / 2, $windowMaxLength);
+        ex = getRandomOffset(-30, 30);
+        a = getRandomOffset(-30, 30);
+        shootingStar = new Kinetic.Line({
+          points: [x, y, x, y],
+          stroke: 'white',
+          strokeWidth: 1,
+          lineCap: 'round'
+        });
+        ssLayer.add(shootingStar);
+        ssLayer.draw();
+      } else {
+        timeDiff = (new Date().getTime() - shootingStarStart) / 100;
+        points = shootingStar.getPoints();
+        points[0].x = points[0].x + ex * timeDiff;
+        points[0].y = points[0].y + a * timeDiff;
+        points[1].x = points[1].x + 1.5 * ex * timeDiff;
+        points[1].y = points[1].y + 1.5 * a * timeDiff;
+        shootingStar.setPoints(points);
+        shootingStar.setOpacity(shootingStar.getOpacity() / 1.2);
+        ssLayer.draw();
+        if (points[0].x < 0 || points[0].y < 0 || points[0].x > $windowWidth || points[0].y > $windowHeight) {
+          shootingStar.remove();
+          shootingStar = null;
+          return setTimeout(function() {
+            return window.requestAnimationFrame(shootingstarFunc);
+          }, 2000);
+        }
+      }
+      return window.requestAnimationFrame(shootingstarFunc);
+    };
+    return shootingstarFunc();
   });
 
 }).call(this);

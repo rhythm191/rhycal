@@ -133,6 +133,18 @@ getStarFactory = (starFactory, rate) ->
 		return starFactory[i] if value < now
 	return starFactory[starFactory.length - 1]
 
+#
+# アニメーションフレームの設定
+#
+window.requestAnimationFrame = ( ->
+	return window.requestAnimationFrame		||
+		window.webkitRequestAnimationFrame	||
+		window.mozRequestAnimationFrame		||
+		window.oRequestAnimationFrame		||
+		window.msRequestAnimationFrame		||
+		(callback, element) ->
+			window.setTimeout(callback, 1000 / 60)
+)();
 
 #
 # メインスクリプト
@@ -204,9 +216,10 @@ jQuery ($) ->
 		stage.setWidth($windowWidth)
 		stage.setHeight($windowHeight)
 		starLayer.rotate(0)
-		starLayer.setX($windowWidth)
-		starLayer.setY($windowHeight)
+		starLayer.setX($windowWidth / 2)
+		starLayer.setY($windowHeight / 2)
 		starLayer.setOffset($windowWidth / 2, $windowHeight / 2)
+		starLayer.draw()
 
 		starLayer.removeChildren()
 		for i in [0..starNum]
@@ -220,35 +233,49 @@ jQuery ($) ->
 
 
 
-
 	# 流れ星を生成するアニメーション
-	# shootingstarFunc = ->
-	# 	x = getRandomOffset(($windowWidth - $windowMaxLength) / 2, $windowMaxLength)
-	# 	y = getRandomOffset(($windowHeight - $windowMaxLength) / 2, $windowMaxLength)
-	# 	ex = 1 #getRandomOffset(-1, 1)
-	# 	a =  3 #getRandomOffset(-100, 100)
-	# 	shootingStar = new Kinetic.Line(
-	# 		points: [0, 0, 0, 0]
-	# 		stroke: 'white'
-	# 		strokeWidth: 2
-	# 	)
+	shootingStar = null
+	shootingStarStart = null
+	ex = null
+	a = null
+	shootingstarFunc = ->
+		if ssLayer.getChildren().length == 0
+			shootingStarStart = new Date().getTime()
+			x = getRandomOffset ($windowWidth - $windowMaxLength) / 2, $windowMaxLength
+			y = getRandomOffset ($windowHeight - $windowMaxLength) / 2, $windowMaxLength
+			ex = getRandomOffset -30, 30
+			a =  getRandomOffset -30, 30
+			shootingStar = new Kinetic.Line(
+				points: [x, y, x, y]
+				stroke: 'white'
+				strokeWidth: 1
+				lineCap: 'round'
+			)
+			ssLayer.add(shootingStar)
+			ssLayer.draw()
+		else 
+			timeDiff =  (new Date().getTime() - shootingStarStart) / 100
+			points = shootingStar.getPoints()
+			points[0].x = points[0].x + ex * timeDiff
+			points[0].y = points[0].y + a * timeDiff
+			points[1].x = points[1].x + 1.5 * ex  * timeDiff
+			points[1].y = points[1].y + 1.5 * a * timeDiff
+			shootingStar.setPoints(points)
+			shootingStar.setOpacity(shootingStar.getOpacity() / 1.2)
+			ssLayer.draw()
 
-	# 	ssLayer.add(shootingStar)
 
-	# 	ssanime = new Kinetic.Animation( (frame) ->
-	# 		points = shootingStar.getPoints()
-	# 		points[0] = points[0] + ex * frame.timeDiff 
-	# 		points[1] = points[1] + a * frame.timeDiff 
-	# 		shootingStar.setPoints(points)
+			if(points[0].x < 0 or points[0].y < 0 or points[0].x > $windowWidth or points[0].y > $windowHeight)
+				shootingStar.remove()
+				shootingStar = null
+				return setTimeout( ->
+					window.requestAnimationFrame shootingstarFunc
+				, 2000)
 
-	# 		if(points[0] < 0 or points[1] < 0 or points[0] > $windowWidth or points[1] > $windowHeight)
-	# 			ssanime.stop()
-	# 			shootingStar.remove()
-	# 	, ssLayer)
-	# 	ssanime.start()
-	# 	setTimeout shootingstarFunc, getRandomOffset(1000, 5000)
+		window.requestAnimationFrame shootingstarFunc
 
-	# shootingstarFunc()
+	shootingstarFunc()
+
 	
 
 
